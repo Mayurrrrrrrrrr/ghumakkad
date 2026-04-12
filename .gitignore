@@ -1,0 +1,10 @@
+﻿# PHP
+vendor/
+.env
+config/database.php
+# Flutter
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
