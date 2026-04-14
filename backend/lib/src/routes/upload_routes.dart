@@ -36,7 +36,7 @@ class UploadRoutes {
       if (fileBytes.length > 5 * 1024 * 1024) return ApiResponse.error("Max file size is 5MB");
       
       final now = DateTime.now();
-      final dir = '/var/www/ghumakkad/uploads/\${now.year}/\${now.month.toString().padLeft(2, '0')}';
+      final dir = '/home/ubuntu/ghumakkad_uploads/\${now.year}/\${now.month.toString().padLeft(2, '0')}';
       await Directory(dir).create(recursive: true);
       
       final filename = '\${_randomHex(8)}.jpg'; 

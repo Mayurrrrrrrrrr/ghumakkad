@@ -3,7 +3,7 @@ set -e
 
 echo "=== Deploying Ghumakkad API ==="
 
-cd /var/www/ghumakkad
+cd /home/ubuntu/ghumakkad
 
 # Pull latest
 git pull origin main
