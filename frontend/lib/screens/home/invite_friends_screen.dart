@@ -78,30 +78,52 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
 
   Widget _buildInviteLinkCard() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.accent.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.accent.withOpacity(0.5)),
+        color: AppColors.primary.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.primary.withOpacity(0.1)),
       ),
       child: Column(
         children: [
           Row(
             children: [
-              const Icon(Icons.link, color: AppColors.primary),
-              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.link, color: AppColors.primary, size: 20),
+              ),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Share Trip Link", style: AppTypography.body.copyWith(fontWeight: FontWeight.bold)),
-                    Text("ghumakkad.in/join/X7K9LP02", style: AppTypography.caption),
+                    Text("Trip Invite Code", style: AppTypography.body.copyWith(fontWeight: FontWeight.bold)),
+                    Text("X7K9LP02", style: AppTypography.heading.copyWith(fontSize: 18, color: AppColors.primary)),
                   ],
                 ),
               ),
-              IconButton(onPressed: () {}, icon: const Icon(Icons.copy, size: 20)),
-              IconButton(onPressed: () {}, icon: const Icon(Icons.share, size: 20)),
+              IconButton(onPressed: () {}, icon: const Icon(Icons.copy, size: 20, color: AppColors.textMuted)),
             ],
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton.icon(
+              onPressed: () {}, // Link to WhatsApp
+              icon: const Icon(Icons.whatsapp, color: Colors.white),
+              label: const Text("Invite via WhatsApp"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF25D366),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                elevation: 0,
+              ),
+            ),
           ),
         ],
       ),

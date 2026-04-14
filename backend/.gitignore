@@ -1,0 +1,5 @@
+/build/
+*.exe
+*.dll
+config/database.dart
+.dart_tool/

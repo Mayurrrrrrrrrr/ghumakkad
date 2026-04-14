@@ -7,6 +7,8 @@ class TripPin {
   final double latitude;
   final double longitude;
   final String? address;
+  final String? notes;
+  final String? photoUrl;
   final int pinOrder;
   final DateTime pinnedAt;
 
@@ -19,6 +21,8 @@ class TripPin {
     required this.latitude,
     required this.longitude,
     this.address,
+    this.notes,
+    this.photoUrl,
     required this.pinOrder,
     required this.pinnedAt,
   });
@@ -33,8 +37,12 @@ class TripPin {
       latitude: double.parse(json['latitude'].toString()),
       longitude: double.parse(json['longitude'].toString()),
       address: json['address'],
+      notes: json['notes'],
+      photoUrl: json['photo_url'],
       pinOrder: json['pin_order'] ?? 0,
-      pinnedAt: DateTime.parse(json['pinned_at']),
+      pinnedAt: json['pinned_at'] != null 
+          ? DateTime.parse(json['pinned_at']) 
+          : DateTime.now(),
     );
   }
 }

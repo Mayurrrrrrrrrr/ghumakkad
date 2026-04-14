@@ -8,6 +8,8 @@ import 'screens/onboarding/phone_login_screen.dart';
 import 'screens/onboarding/profile_setup_screen.dart';
 import 'screens/home/home_screen.dart';
 
+import 'screens/main_shell.dart';
+
 class GhumakkadApp extends ConsumerWidget {
   const GhumakkadApp({super.key});
 
@@ -40,7 +42,7 @@ class GhumakkadApp extends ConsumerWidget {
       case AuthState.onboarding:
         return const ProfileSetupScreen();
       case AuthState.authenticated:
-        return const HomeScreen();
+        return const MainShell();
       default:
         return const SplashScreen();
     }

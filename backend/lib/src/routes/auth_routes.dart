@@ -1,108 +1,119 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
-import '../services/db_service.dart';
-import '../utils/response_helper.dart';
-import 'package:crypto/crypto.dart';
+import '../core/auth.dart';
+import '../core/db.dart';
+import '../core/response.dart';
 
 class AuthRoutes {
   Router get router {
     final router = Router();
-
-    // POST /api/v1/auth/send-otp
-    router.post('/send-otp', (Request request) async {
-      final body = await request.readAsString();
-      print('Auth Routes: Body Length -> ${body.length}');
-      print('Auth Routes: Body Content -> "$body"');
-
-      if (body.isEmpty) {
-        return ResponseHelper.error('Request body is empty');
-      }
-
-      final payload = jsonDecode(body);
-      final phone = payload['phone'];
-
-      if (phone == null || phone.toString().length < 10) {
-        return ResponseHelper.error('Valid phone number is required');
-      }
-
-      // MOCK: In production, trigger OTP via SMS
-      return ResponseHelper.success(
-        {'phone': phone, 'mock_otp': '123456'},
-        'OTP sent successfully',
-      );
-    });
-
-    // POST /api/v1/auth/verify-otp
-    router.post('/verify-otp', (Request request) async {
-      final body = await request.readAsString();
-      print('Auth Routes: Received Body (Verify) -> "$body"');
-
-      if (body.isEmpty) {
-        return ResponseHelper.error('Request body is empty');
-      }
-
-      final payload = jsonDecode(body);
-      final phone = payload['phone'];
-      final otp = payload['otp'];
-
-      if (phone == null || otp == null) {
-        return ResponseHelper.error('Phone and OTP are required');
-      }
-
-      if (otp != '123456') {
-        return ResponseHelper.error('Invalid OTP');
-      }
-
-      final db = DbService().connection;
-      
-      // Check for user
-      var result = await db.execute(
-        'SELECT * FROM users WHERE phone = :phone',
-        {'phone': phone},
-      );
-
-      bool isNew = false;
-      var user;
-
-      if (result.rows.isEmpty) {
-        await db.execute(
-          'INSERT INTO users (phone, name) VALUES (:phone, :name)',
-          {'phone': phone, 'name': 'Wanderer'},
-        );
-        isNew = true;
-        result = await db.execute(
-          'SELECT * FROM users WHERE phone = :phone',
-          {'phone': phone},
-        );
-      }
-      
-      user = result.rows.first.assoc();
-      final userId = user['id'];
-
-      // Generate token
-      final token = sha256.convert(utf8.encode(DateTime.now().toString() + phone)).toString();
-      final expiresAt = DateTime.now().add(const Duration(days: 30));
-
-      await db.execute(
-        'INSERT INTO auth_tokens (user_id, token, expires_at) VALUES (:u, :t, :e)',
-        {
-          'u': userId,
-          't': token,
-          'e': expiresAt.toIso8601String().replaceFirst('T', ' ').split('.').first,
-        },
-      );
-
-      return ResponseHelper.success(
-        {
-          'user': user,
-          'token': token,
-          'is_new_user': isNew,
-        },
-        'Verified successfully',
-      );
-    });
-
+    router.post('/send-otp', _sendOtp);
+    router.post('/verify-otp', _verifyOtp);
+    router.post('/logout', _logout);
+    router.put('/update-profile', _updateProfile);
+    router.put('/fcm-token', _fcmToken);
     return router;
+  }
+
+  Future<Response> _sendOtp(Request request) async {
+    try {
+      final body = jsonDecode(await request.readAsString()) as Map<String, dynamic>;
+      final phone = body['phone'];
+      if (phone == null) return ApiResponse.error("Phone required");
+      // TODO: replace with Firebase Admin SDK or SMS provider
+      return ApiResponse.ok({"mock_otp": "123456"});
+    } catch (e) {
+      return ApiResponse.serverError(e.toString());
+    }
+  }
+
+  Future<Response> _verifyOtp(Request request) async {
+    try {
+      final body = jsonDecode(await request.readAsString()) as Map<String, dynamic>;
+      final phone = body['phone'];
+      final otp = body['otp'];
+      if (phone == null || otp == null) return ApiResponse.error("Phone and OTP required");
+
+      // MOCK validation
+      if (otp != "123456") return ApiResponse.error("Invalid OTP");
+
+      var user = await DB.queryOne('SELECT * FROM users WHERE phone = ?', [phone]);
+      bool isNewUser = false;
+      
+      if (user == null) {
+        final res = await DB.execute('INSERT INTO users (phone, name) VALUES (?, ?)', [phone, "Wanderer"]);
+        user = await DB.queryOne('SELECT * FROM users WHERE id = ?', [res.insertId]);
+        isNewUser = true;
+      }
+
+      final random = Random.secure();
+      final values = List<int>.generate(32, (_) => random.nextInt(256));
+      final token = values.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+      
+      final expiresAt = DateTime.now().add(const Duration(days: 30));
+      final expStr = "\${expiresAt.year}-\${expiresAt.month.toString().padLeft(2,'0')}-\${expiresAt.day.toString().padLeft(2,'0')} \${expiresAt.hour.toString().padLeft(2,'0')}:\${expiresAt.minute.toString().padLeft(2,'0')}:\${expiresAt.second.toString().padLeft(2,'0')}";
+
+      await DB.execute(
+        'INSERT INTO auth_tokens (user_id, token, expires_at) VALUES (?, ?, ?)',
+        [user!['id'], token, expStr]
+      );
+
+      return ApiResponse.ok({
+        'user': user,
+        'token': token,
+        'is_new_user': isNewUser
+      });
+    } catch (e) {
+      return ApiResponse.serverError(e.toString());
+    }
+  }
+
+  Future<Response> _logout(Request request) async {
+    try {
+      await Auth.requireLogin(request);
+      final authHeader = request.headers['authorization'] ?? '';
+      final token = authHeader.substring(7).trim();
+      await DB.execute('DELETE FROM auth_tokens WHERE token = ?', [token]);
+      return ApiResponse.ok(null, message: "Logged out");
+    } on UnauthorizedException {
+      return ApiResponse.unauthorized();
+    } catch (e) {
+      return ApiResponse.serverError(e.toString());
+    }
+  }
+
+  Future<Response> _updateProfile(Request request) async {
+    try {
+      final user = await Auth.requireLogin(request);
+      final body = jsonDecode(await request.readAsString()) as Map<String, dynamic>;
+      final name = body['name'];
+      final avatarUrl = body['avatar_url'];
+      if (name == null) return ApiResponse.error("Name required");
+
+      await DB.execute('UPDATE users SET name = ?, avatar_url = ? WHERE id = ?', [name, avatarUrl, user['id']]);
+      final updatedUser = await DB.queryOne('SELECT * FROM users WHERE id = ?', [user['id']]);
+      return ApiResponse.ok(updatedUser);
+    } on UnauthorizedException {
+      return ApiResponse.unauthorized();
+    } catch (e) {
+      return ApiResponse.serverError(e.toString());
+    }
+  }
+
+  Future<Response> _fcmToken(Request request) async {
+    try {
+      final user = await Auth.requireLogin(request);
+      final body = jsonDecode(await request.readAsString()) as Map<String, dynamic>;
+      final fcmToken = body['fcm_token'];
+
+      await DB.execute('UPDATE users SET fcm_token = ? WHERE id = ?', [fcmToken, user['id']]);
+      return ApiResponse.ok(null);
+    } on UnauthorizedException {
+      return ApiResponse.unauthorized();
+    } catch (e) {
+      return ApiResponse.serverError(e.toString());
+    }
   }
 }

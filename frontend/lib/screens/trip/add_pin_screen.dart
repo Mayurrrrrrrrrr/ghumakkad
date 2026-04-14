@@ -93,13 +93,34 @@ class _AddPinScreenState extends ConsumerState<AddPinScreen> {
                 hintText: "e.g., Best Maggi here!",
                 fillColor: AppColors.white,
                 filled: true,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
               ),
             ),
             const SizedBox(height: 24),
-            _buildLabel("Address"),
+            _buildLabel("Travel Notes"),
             const SizedBox(height: 8),
-            Text(_address, style: AppTypography.caption),
+            TextField(
+              maxLines: 3,
+              decoration: InputDecoration(
+                hintText: "What makes this moment special?",
+                fillColor: AppColors.white,
+                filled: true,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+              ),
+            ),
+            const SizedBox(height: 24),
+            _buildLabel("Photos"),
+            const SizedBox(height: 12),
+            Container(
+              height: 100,
+              width: 100,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.primary.withOpacity(0.2), style: BorderStyle.none),
+              ),
+              child: const Icon(Icons.add_a_photo_outlined, color: AppColors.primary),
+            ),
             const SizedBox(height: 48),
             SizedBox(
               width: double.infinity,
@@ -109,11 +130,12 @@ class _AddPinScreenState extends ConsumerState<AddPinScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: AppColors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  elevation: 0,
                 ),
                 child: _isLoading 
                   ? const CircularProgressIndicator(color: AppColors.white)
-                  : Text("Save Pin", style: AppTypography.button),
+                  : Text("Save Moment", style: AppTypography.button),
               ),
             ),
           ],

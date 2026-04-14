@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../core/services/api_service.dart';
 import '../core/services/auth_service.dart';
 
@@ -17,6 +18,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
   AuthNotifier(this._authService) : super(AuthState.initial) {
     checkAuth();
   }
+
+
 
   Future<void> checkAuth() async {
     final user = await _authService.getCurrentUser();

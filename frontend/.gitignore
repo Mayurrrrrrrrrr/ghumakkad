@@ -32,6 +32,9 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
+web.zip
+*.exe
+*.dll
 
 # Symbolication related
 app.*.symbols
