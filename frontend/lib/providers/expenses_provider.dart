@@ -14,7 +14,7 @@ class ExpensesNotifier extends StateNotifier<AsyncValue<List<Expense>>> {
 
   Future<void> fetchExpenses() async {
     try {
-      final response = await _apiService.get("\${ApiConstants.expenses}?trip_id=\$tripId");
+      final response = await _apiService.get("${ApiConstants.expenses}?trip_id=$tripId");
       if (response.data['success'] == true) {
         final List list = response.data['data'];
         state = AsyncValue.data(list.map((e) => Expense.fromJson(e)).toList());
@@ -34,20 +34,20 @@ class ExpensesNotifier extends StateNotifier<AsyncValue<List<Expense>>> {
         return true;
       }
     } catch (e) {
-      print('Error adding expense: \$e');
+      print('Error adding expense: $e');
     }
     return false;
   }
 
   Future<bool> deleteExpense(int expenseId) async {
     try {
-      final response = await _apiService.delete("\${ApiConstants.expenses}/\$expenseId");
+      final response = await _apiService.delete("${ApiConstants.expenses}/$expenseId");
       if (response.data['success'] == true) {
         state = AsyncValue.data(state.value?.where((e) => e.id != expenseId).toList() ?? []);
         return true;
       }
     } catch (e) {
-      print('Error deleting expense: \$e');
+      print('Error deleting expense: $e');
     }
     return false;
   }

@@ -53,7 +53,7 @@ class AuthRoutes {
       final token = values.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
       
       final expiresAt = DateTime.now().add(const Duration(days: 30));
-      final expStr = "\${expiresAt.year}-\${expiresAt.month.toString().padLeft(2,'0')}-\${expiresAt.day.toString().padLeft(2,'0')} \${expiresAt.hour.toString().padLeft(2,'0')}:\${expiresAt.minute.toString().padLeft(2,'0')}:\${expiresAt.second.toString().padLeft(2,'0')}";
+      final expStr = "${expiresAt.year}-${expiresAt.month.toString().padLeft(2,'0')}-${expiresAt.day.toString().padLeft(2,'0')} ${expiresAt.hour.toString().padLeft(2,'0')}:${expiresAt.minute.toString().padLeft(2,'0')}:${expiresAt.second.toString().padLeft(2,'0')}";
 
       await DB.execute(
         'INSERT INTO auth_tokens (user_id, token, expires_at) VALUES (?, ?, ?)',

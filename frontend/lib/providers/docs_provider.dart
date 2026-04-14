@@ -29,8 +29,8 @@ class DocsNotifier extends StateNotifier<AsyncValue<DocsState>> {
 
   Future<void> fetchDocs() async {
     try {
-      final tRes = await _apiService.get("\${ApiConstants.tickets}?trip_id=\$tripId");
-      final hRes = await _apiService.get("\${ApiConstants.hotels}?trip_id=\$tripId");
+      final tRes = await _apiService.get("${ApiConstants.tickets}?trip_id=$tripId");
+      final hRes = await _apiService.get("${ApiConstants.hotels}?trip_id=$tripId");
       
       List<Ticket> tickets = [];
       List<Hotel> hotels = [];
@@ -60,14 +60,14 @@ class DocsNotifier extends StateNotifier<AsyncValue<DocsState>> {
         return true;
       }
     } catch (e) {
-      print('Error adding ticket: \$e');
+      print('Error adding ticket: $e');
     }
     return false;
   }
 
   Future<bool> deleteTicket(int id) async {
     try {
-      final res = await _apiService.delete("\${ApiConstants.tickets}/\$id");
+      final res = await _apiService.delete("${ApiConstants.tickets}/$id");
       if (res.data['success'] == true) {
         final List<Ticket> current = state.value?.tickets ?? [];
         state = AsyncValue.data(DocsState(
@@ -77,7 +77,7 @@ class DocsNotifier extends StateNotifier<AsyncValue<DocsState>> {
         return true;
       }
     } catch (e) {
-      print('Error deleting ticket: \$e');
+      print('Error deleting ticket: $e');
     }
     return false;
   }
@@ -94,14 +94,14 @@ class DocsNotifier extends StateNotifier<AsyncValue<DocsState>> {
         return true;
       }
     } catch (e) {
-      print('Error adding hotel: \$e');
+      print('Error adding hotel: $e');
     }
     return false;
   }
 
   Future<bool> deleteHotel(int id) async {
     try {
-      final res = await _apiService.delete("\${ApiConstants.hotels}/\$id");
+      final res = await _apiService.delete("${ApiConstants.hotels}/$id");
       if (res.data['success'] == true) {
         final List<Hotel> current = state.value?.hotels ?? [];
         state = AsyncValue.data(DocsState(
@@ -111,7 +111,7 @@ class DocsNotifier extends StateNotifier<AsyncValue<DocsState>> {
         return true;
       }
     } catch (e) {
-      print('Error deleting hotel: \$e');
+      print('Error deleting hotel: $e');
     }
     return false;
   }

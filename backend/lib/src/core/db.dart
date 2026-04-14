@@ -26,7 +26,8 @@ class DB {
   static Future<List<Map<String, dynamic>>> query(
     String sql, [List<Object?>? params]
   ) async {
-    final result = await conn.execute(sql, params ?? []);
+    final mapped = _mapParams(sql, params);
+    final result = await conn.execute(mapped.sql, mapped.params);
     return result.rows.map((row) => row.assoc()).toList();
   }
 
@@ -34,8 +35,20 @@ class DB {
   static Future<({int insertId, int affectedRows})> execute(
     String sql, [List<Object?>? params]
   ) async {
-    final result = await conn.execute(sql, params ?? []);
+    final mapped = _mapParams(sql, params);
+    final result = await conn.execute(mapped.sql, mapped.params);
     return (insertId: result.lastInsertID.toInt(), affectedRows: result.affectedRows.toInt());
+  }
+  
+  static ({String sql, Map<String, dynamic> params}) _mapParams(String sql, List<Object?>? params) {
+    if (params == null || params.isEmpty) return (sql: sql, params: {});
+    String newSql = sql;
+    Map<String, dynamic> mappedParams = {};
+    for (int i = 0; i < params.length; i++) {
+       newSql = newSql.replaceFirst('?', ':p\$i');
+       mappedParams['p\$i'] = params[i];
+    }
+    return (sql: newSql, params: mappedParams);
   }
 
   // Helper: single row or null

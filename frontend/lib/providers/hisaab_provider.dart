@@ -5,7 +5,7 @@ import 'auth_provider.dart';
 
 final hisaabProvider = FutureProvider.family<Map<String, dynamic>, int>((ref, tripId) async {
   final apiService = ref.read(apiServiceProvider);
-  final response = await apiService.get("\${ApiConstants.hisaab}/\$tripId");
+  final response = await apiService.get("${ApiConstants.hisaab}/$tripId");
   if (response.data['success'] == true) {
     return response.data['data'] as Map<String, dynamic>;
   }

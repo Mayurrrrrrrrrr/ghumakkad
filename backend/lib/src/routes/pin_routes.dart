@@ -84,14 +84,14 @@ class PinRoutes {
 
       for (final field in allowedFields) {
         if (body.containsKey(field)) {
-          setClauses.add('\$field = ?');
+          setClauses.add('$field = ?');
           params.add(body[field]);
         }
       }
 
       if (setClauses.isNotEmpty) {
         params.add(id);
-        await DB.execute('UPDATE trip_pins SET \${setClauses.join(', ')} WHERE id = ?', params);
+        await DB.execute('UPDATE trip_pins SET ${setClauses.join(', ')} WHERE id = ?', params);
       }
 
       return ApiResponse.ok(null, message: "Updated");

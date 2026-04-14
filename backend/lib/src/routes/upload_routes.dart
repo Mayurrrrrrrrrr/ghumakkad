@@ -36,14 +36,14 @@ class UploadRoutes {
       if (fileBytes.length > 5 * 1024 * 1024) return ApiResponse.error("Max file size is 5MB");
       
       final now = DateTime.now();
-      final dir = '/home/ubuntu/ghumakkad_uploads/\${now.year}/\${now.month.toString().padLeft(2, '0')}';
+      final dir = '/home/ubuntu/ghumakkad_uploads/${now.year}/${now.month.toString().padLeft(2, '0')}';
       await Directory(dir).create(recursive: true);
       
-      final filename = '\${_randomHex(8)}.jpg'; 
-      final file = File('\$dir/\$filename');
+      final filename = '${_randomHex(8)}.jpg'; 
+      final file = File('$dir/$filename');
       await file.writeAsBytes(fileBytes);
       
-      final url = 'https://ghumakkad.yuktaa.com/uploads/\${now.year}/\${now.month.toString().padLeft(2, '0')}/\$filename';
+      final url = 'https://ghumakkad.yuktaa.com/uploads/${now.year}/${now.month.toString().padLeft(2, '0')}/$filename';
       return ApiResponse.ok({'url': url});
     } on UnauthorizedException {
       return ApiResponse.unauthorized();
