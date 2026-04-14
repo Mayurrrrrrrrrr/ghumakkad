@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:io';
+import 'package:dio/dio.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
+import '../../core/constants/api_constants.dart';
 import '../../core/services/location_service.dart';
 import '../../providers/pins_provider.dart';
+import '../../providers/auth_provider.dart';
 
 class AddPinScreen extends ConsumerStatefulWidget {
   final int tripId;
@@ -28,6 +33,8 @@ class _AddPinScreenState extends ConsumerState<AddPinScreen> {
   double? _lat;
   double? _lng;
   bool _isLoading = false;
+  File? _selectedImage;
+  final ImagePicker _picker = ImagePicker();
 
   final List<Map<String, dynamic>> _pinTypes = [
     {'type': 'memory', 'icon': Icons.camera_alt, 'label': 'Memory'},
@@ -111,15 +118,28 @@ class _AddPinScreenState extends ConsumerState<AddPinScreen> {
             const SizedBox(height: 24),
             _buildLabel("Photos"),
             const SizedBox(height: 12),
-            Container(
-              height: 100,
-              width: 100,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.primary.withOpacity(0.2), style: BorderStyle.none),
+            GestureDetector(
+              onTap: () async {
+                final XFile? image = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+                if (image != null) {
+                  setState(() => _selectedImage = File(image.path));
+                }
+              },
+              child: Container(
+                height: 100,
+                width: 100,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.primary.withOpacity(0.2), style: BorderStyle.none),
+                ),
+                child: _selectedImage != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.file(_selectedImage!, fit: BoxFit.cover),
+                      )
+                    : const Icon(Icons.add_a_photo_outlined, color: AppColors.primary),
               ),
-              child: const Icon(Icons.add_a_photo_outlined, color: AppColors.primary),
             ),
             const SizedBox(height: 48),
             SizedBox(
@@ -201,16 +221,47 @@ class _AddPinScreenState extends ConsumerState<AddPinScreen> {
     if (_lat == null || _lng == null) return;
     
     setState(() => _isLoading = true);
-    final success = await ref.read(pinsProvider(widget.tripId).notifier).addPin({
+
+    String? imageUrl;
+    final apiService = ref.read(apiServiceProvider);
+
+    if (_selectedImage != null) {
+      try {
+        final filename = _selectedImage!.path.split('/').last.split('\\').last; 
+        final formData = FormData.fromMap({
+          'image': await MultipartFile.fromFile(_selectedImage!.path, filename: filename),
+        });
+        final response = await apiService.client.post(ApiConstants.uploadImage, data: formData);
+        if (response.data['success'] == true) {
+          imageUrl = response.data['data']['url'];
+        }
+      } catch (e) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to upload image')));
+      }
+    }
+
+    final pinId = await ref.read(pinsProvider(widget.tripId).notifier).addPin({
       'pin_type': _selectedType,
       'title': _titleController.text.trim(),
       'latitude': _lat,
       'longitude': _lng,
       'address': _address,
     });
+
+    if (pinId != null && imageUrl != null) {
+      // Create a photo memory
+      try {
+        await apiService.post(ApiConstants.memories, data: {
+          'pin_id': pinId,
+          'memory_type': 'photo',
+          'content': imageUrl,
+        });
+      } catch (_) {}
+    }
+
     setState(() => _isLoading = false);
 
-    if (success && mounted) {
+    if (pinId != null && mounted) {
       Navigator.pop(context);
     }
   }

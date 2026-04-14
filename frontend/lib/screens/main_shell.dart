@@ -5,6 +5,7 @@ import '../core/constants/app_typography.dart';
 import '../providers/auth_provider.dart';
 import 'home/home_screen.dart';
 import 'home/create_trip_screen.dart';
+import 'home/profile_screen.dart';
 
 class MainShell extends ConsumerStatefulWidget {
   const MainShell({super.key});
@@ -20,7 +21,7 @@ class _MainShellState extends ConsumerState<MainShell> {
     const HomeScreen(),
     const _PlaceholderScreen(title: "Explore", icon: Icons.explore),
     const _PlaceholderScreen(title: "Alerts", icon: Icons.notifications),
-    const _PlaceholderScreen(title: "Profile", icon: Icons.person),
+    const ProfileScreen(),
   ];
 
   @override

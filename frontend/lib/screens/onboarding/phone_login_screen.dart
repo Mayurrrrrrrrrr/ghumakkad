@@ -162,19 +162,30 @@ class _PhoneLoginScreenState extends ConsumerState<PhoneLoginScreen> {
     }
 
     setState(() => _isLoading = true);
-    final success = await ref.read(authProvider.notifier).sendOtp(phone);
-    setState(() => _isLoading = false);
-
-    if (success && mounted) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => OtpVerifyScreen(phone: phone),
-        ),
-      );
-    } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to send OTP. Please try again.")),
-      );
-    }
+    
+    await ref.read(authProvider.notifier).sendOtp(
+      phone: phone,
+      onCodeSent: (verificationId) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => OtpVerifyScreen(
+                phone: phone,
+                verificationId: verificationId,
+              ),
+            ),
+          );
+        }
+      },
+      onError: (error) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Failed to send OTP: $error")),
+          );
+        }
+      },
+    );
   }
 }

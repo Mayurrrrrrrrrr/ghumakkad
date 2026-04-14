@@ -30,12 +30,24 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<bool> sendOtp(String phone) async {
-    return await _authService.sendOtp(phone);
+  Future<void> sendOtp({
+    required String phone,
+    required Function(String) onCodeSent,
+    required Function(String) onError,
+  }) async {
+    await _authService.sendOtp(
+      phone: phone,
+      onCodeSent: onCodeSent,
+      onError: onError,
+    );
   }
 
-  Future<bool> verifyOtp(String phone, String otp) async {
-    final result = await _authService.verifyOtp(phone, otp);
+  Future<bool> verifyOtp(String phone, String verificationId, String otp) async {
+    final result = await _authService.verifyOtp(
+      verificationId: verificationId,
+      otp: otp,
+      phone: phone,
+    );
     if (result != null) {
       if (result['isNew'] == true) {
         state = AuthState.onboarding;

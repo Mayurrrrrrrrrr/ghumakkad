@@ -115,7 +115,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
             height: 50,
             child: ElevatedButton.icon(
               onPressed: () {}, // Link to WhatsApp
-              icon: const Icon(Icons.whatsapp, color: Colors.white),
+              icon: const Icon(Icons.chat, color: Colors.white),
               label: const Text("Invite via WhatsApp"),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF25D366),

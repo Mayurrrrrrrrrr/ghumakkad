@@ -6,7 +6,8 @@ import '../../providers/auth_provider.dart';
 
 class OtpVerifyScreen extends ConsumerStatefulWidget {
   final String phone;
-  const OtpVerifyScreen({super.key, required this.phone});
+  final String verificationId;
+  const OtpVerifyScreen({super.key, required this.phone, required this.verificationId});
 
   @override
   ConsumerState<OtpVerifyScreen> createState() => _OtpVerifyScreenState();
@@ -156,7 +157,11 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
     }
 
     setState(() => _isLoading = true);
-    final success = await ref.read(authProvider.notifier).verifyOtp(widget.phone, otp);
+    final success = await ref.read(authProvider.notifier).verifyOtp(
+      widget.phone, 
+      widget.verificationId, 
+      otp
+    );
     setState(() => _isLoading = false);
 
     if (success && mounted) {
@@ -164,7 +169,7 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
       Navigator.of(context).popUntil((route) => route.isFirst);
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Invalid OTP code. Try 123456")),
+        const SnackBar(content: Text("Invalid OTP code.")),
       );
     }
   }

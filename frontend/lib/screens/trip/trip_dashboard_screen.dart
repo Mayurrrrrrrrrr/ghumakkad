@@ -4,6 +4,10 @@ import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
 import '../../models/trip.dart';
 import 'trip_map_screen.dart';
+import 'hisaab_screen.dart';
+import 'timeline_screen.dart';
+import 'docs_screen.dart';
+import 'members_screen.dart';
 
 class TripDashboardScreen extends ConsumerWidget {
   final Trip trip;
@@ -26,7 +30,7 @@ class TripDashboardScreen extends ConsumerWidget {
                   const SizedBox(height: 32),
                   _buildTabGrid(context),
                   const SizedBox(height: 40),
-                  _buildMembersSection(),
+                  _buildMembersSection(context),
                 ],
               ),
             ),
@@ -98,9 +102,15 @@ class TripDashboardScreen extends ConsumerWidget {
         _buildTabTile(context, "Map", "🗺️", AppColors.accent, () {
           Navigator.of(context).push(MaterialPageRoute(builder: (_) => TripMapScreen(trip: trip)));
         }),
-        _buildTabTile(context, "Memories", "📸", Colors.blue.withOpacity(0.1), () {}),
-        _buildTabTile(context, "Hisaab", "💸", Colors.green.withOpacity(0.1), () {}),
-        _buildTabTile(context, "Docs", "📋", Colors.orange.withOpacity(0.1), () {}),
+        _buildTabTile(context, "Memories", "📸", Colors.blue.withOpacity(0.1), () {
+          Navigator.of(context).push(MaterialPageRoute(builder: (_) => TimelineScreen(trip: trip)));
+        }),
+        _buildTabTile(context, "Hisaab", "💸", Colors.green.withOpacity(0.1), () {
+          Navigator.of(context).push(MaterialPageRoute(builder: (_) => HisaabScreen(trip: trip)));
+        }),
+        _buildTabTile(context, "Docs", "📋", Colors.orange.withOpacity(0.1), () {
+          Navigator.of(context).push(MaterialPageRoute(builder: (_) => DocsScreen(trip: trip)));
+        }),
       ],
     );
   }
@@ -132,11 +142,22 @@ class TripDashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildMembersSection() {
+  Widget _buildMembersSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Wanderers", style: AppTypography.body.copyWith(fontWeight: FontWeight.bold)),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text("Wanderers", style: AppTypography.body.copyWith(fontWeight: FontWeight.bold)),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).push(MaterialPageRoute(builder: (_) => MembersScreen(trip: trip)));
+              }, 
+              child: const Text('View All')
+            )
+          ]
+        ),
         const SizedBox(height: 12),
         Row(
           children: [
@@ -144,7 +165,7 @@ class TripDashboardScreen extends ConsumerWidget {
             const SizedBox(width: -8),
             const CircleAvatar(radius: 18, backgroundColor: AppColors.secondary, child: Icon(Icons.person, size: 18, color: AppColors.white)),
             const SizedBox(width: 8),
-            Text("You & 1 other", style: AppTypography.caption),
+            Text("Trip Members", style: AppTypography.caption),
           ],
         ),
       ],

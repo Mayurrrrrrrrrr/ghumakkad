@@ -1,27 +1,57 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../constants/api_constants.dart';
 import 'api_service.dart';
 
 class AuthService {
   final ApiService _apiService;
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
   AuthService(this._apiService);
 
-  Future<bool> sendOtp(String phone) async {
+  Future<void> sendOtp({
+    required String phone,
+    required Function(String verificationId) onCodeSent,
+    required Function(String error) onError,
+  }) async {
     try {
-      final response = await _apiService.post(ApiConstants.sendOtp, data: {'phone': phone});
-      return response.data['success'] == true;
+      await _firebaseAuth.verifyPhoneNumber(
+        phoneNumber: '+91$phone',
+        verificationCompleted: (PhoneAuthCredential credential) {},
+        verificationFailed: (FirebaseAuthException e) {
+          onError(e.message ?? 'Verification failed');
+        },
+        codeSent: (String verificationId, int? resendToken) {
+          onCodeSent(verificationId);
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {},
+      );
     } catch (e) {
-      return false;
+      onError(e.toString());
     }
   }
 
-  Future<Map<String, dynamic>?> verifyOtp(String phone, String otp) async {
+  Future<Map<String, dynamic>?> verifyOtp({
+    required String verificationId,
+    required String otp,
+    required String phone,
+  }) async {
     try {
+      final credential = PhoneAuthProvider.credential(
+        verificationId: verificationId,
+        smsCode: otp,
+      );
+
+      final userCredential = await _firebaseAuth.signInWithCredential(credential);
+      final idToken = await userCredential.user?.getIdToken();
+
+      if (idToken == null) return null;
+
+      // Exchange Firebase Token with backend
       final response = await _apiService.post(ApiConstants.verifyOtp, data: {
         'phone': phone,
-        'otp': otp,
+        'firebase_token': idToken,
       });
 
       if (response.data['success'] == true) {
@@ -47,6 +77,7 @@ class AuthService {
 
   Future<void> logout() async {
     try {
+      await _firebaseAuth.signOut();
       await _apiService.post(ApiConstants.logout);
     } finally {
       final prefs = await SharedPreferences.getInstance();
@@ -64,3 +95,4 @@ class AuthService {
     return null;
   }
 }
+

@@ -16,6 +16,9 @@ class ApiConstants {
   static const String inviteLink = '/invite-link';
   static const String transferOwnership = '/transfer';
 
+  // Members
+  static const String members = '/members';
+
   // Pins
   static const String pins = '/pins';
 

@@ -27,7 +27,7 @@ class PinsNotifier extends StateNotifier<AsyncValue<List<TripPin>>> {
     }
   }
 
-  Future<bool> addPin(Map<String, dynamic> pinData) async {
+  Future<int?> addPin(Map<String, dynamic> pinData) async {
     try {
       final response = await _apiService.post(ApiConstants.pins, data: {
         ...pinData,
@@ -35,12 +35,12 @@ class PinsNotifier extends StateNotifier<AsyncValue<List<TripPin>>> {
       });
       if (response.data['success'] == true) {
         fetchPins(); // Refresh list
-        return true;
+        return response.data['data']['id'] as int?;
       }
     } catch (e) {
       // Handle error
     }
-    return false;
+    return null;
   }
 }
 

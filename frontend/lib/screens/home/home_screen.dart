@@ -7,6 +7,7 @@ import '../../core/constants/app_typography.dart';
 import '../../models/trip.dart';
 import '../trip/trip_dashboard_screen.dart';
 import '../../providers/trips_provider.dart';
+import 'anniversary_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -15,6 +16,26 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final bool isDesktop = MediaQuery.of(context).size.width > 900;
     final tripsAsync = ref.watch(tripsProvider);
+
+    ref.listen(tripsProvider, (previous, next) {
+      if (previous?.isLoading == true && next.hasValue) {
+        final trips = next.value!;
+        for (final trip in trips) {
+          if (trip.startDate == null) continue;
+          final ageInDays = DateTime.now().difference(trip.startDate!).inDays;
+          if (ageInDays >= 365) {
+            final anniversary = ageInDays % 365;
+            if (anniversary <= 3) {
+              final years = ageInDays ~/ 365;
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => AnniversaryScreen(trip: trip, years: years)
+              ));
+              break;
+            }
+          }
+        }
+      }
+    });
     
     return Scaffold(
       backgroundColor: AppColors.background,

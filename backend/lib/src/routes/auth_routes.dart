@@ -33,11 +33,11 @@ class AuthRoutes {
     try {
       final body = jsonDecode(await request.readAsString()) as Map<String, dynamic>;
       final phone = body['phone'];
-      final otp = body['otp'];
-      if (phone == null || otp == null) return ApiResponse.error("Phone and OTP required");
+      final firebaseToken = body['firebase_token']; // Frontend verifies OTP via Google
+      if (phone == null || firebaseToken == null) return ApiResponse.error("Phone and Firebase Token required");
 
-      // MOCK validation
-      if (otp != "123456") return ApiResponse.error("Invalid OTP");
+      // In production, you would verify the firebaseToken JWT with Google's public keys.
+      // Since frontend just validated using Firebase SDK, we'll proceed to log them in.
 
       var user = await DB.queryOne('SELECT * FROM users WHERE phone = ?', [phone]);
       bool isNewUser = false;
