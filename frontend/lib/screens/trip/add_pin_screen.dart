@@ -28,6 +28,7 @@ class AddPinScreen extends ConsumerStatefulWidget {
 
 class _AddPinScreenState extends ConsumerState<AddPinScreen> {
   final _titleController = TextEditingController();
+  final _notesController = TextEditingController();
   String _selectedType = 'memory';
   String _address = "Fetching address...";
   double? _lat;
@@ -107,6 +108,7 @@ class _AddPinScreenState extends ConsumerState<AddPinScreen> {
             _buildLabel("Travel Notes"),
             const SizedBox(height: 8),
             TextField(
+              controller: _notesController,
               maxLines: 3,
               decoration: InputDecoration(
                 hintText: "What makes this moment special?",
@@ -248,15 +250,29 @@ class _AddPinScreenState extends ConsumerState<AddPinScreen> {
       'address': _address,
     });
 
-    if (pinId != null && imageUrl != null) {
-      // Create a photo memory
-      try {
-        await apiService.post(ApiConstants.memories, data: {
-          'pin_id': pinId,
-          'memory_type': 'photo',
-          'content': imageUrl,
-        });
-      } catch (_) {}
+    if (pinId != null) {
+      // 1. Create photo memory if image was uploaded
+      if (imageUrl != null) {
+        try {
+          await apiService.post(ApiConstants.memories, data: {
+            'pin_id': pinId,
+            'memory_type': 'photo',
+            'content': imageUrl,
+            'caption': _titleController.text.trim(),
+          });
+        } catch (_) {}
+      }
+
+      // 2. Create note memory if notes provided
+      if (_notesController.text.trim().isNotEmpty) {
+        try {
+          await apiService.post(ApiConstants.memories, data: {
+            'pin_id': pinId,
+            'memory_type': 'note',
+            'content': _notesController.text.trim(),
+          });
+        } catch (_) {}
+      }
     }
 
     setState(() => _isLoading = false);

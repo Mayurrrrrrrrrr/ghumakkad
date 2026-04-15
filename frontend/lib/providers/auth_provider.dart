@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../core/services/api_service.dart';
+import '../core/services/auth_service.dart';
 
 Future<int?> getCurrentUserId() async {
   final prefs = await SharedPreferences.getInstance();
@@ -9,8 +11,6 @@ Future<int?> getCurrentUserId() async {
   final userData = json.decode(userDataStr);
   return userData['id'] as int?;
 }
-import '../core/services/api_service.dart';
-import '../core/services/auth_service.dart';
 
 final apiServiceProvider = Provider<ApiService>((ref) => ApiService());
 

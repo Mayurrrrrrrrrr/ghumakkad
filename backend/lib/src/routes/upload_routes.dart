@@ -4,7 +4,6 @@ import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 import 'package:mime/mime.dart';
 import '../core/auth.dart';
-import '../core/db.dart';
 import '../core/response.dart';
 
 class UploadRoutes {
@@ -16,7 +15,7 @@ class UploadRoutes {
 
   Future<Response> _uploadImage(Request request) async {
     try {
-      final user = await Auth.requireLogin(request);
+      await Auth.requireLogin(request);
       
       final contentType = request.headers['content-type'] ?? '';
       if (!contentType.contains('multipart/form-data')) {

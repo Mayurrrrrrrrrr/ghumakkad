@@ -83,42 +83,34 @@ class ExpenseRoutes {
         newExpenseId = res.insertId;
 
         if (splitType == 'equal') {
-          List<dynamic> targetMembers = [];
+          List<dynamic> memberIds;
           if (body['split_among'] != null && (body['split_among'] as List).isNotEmpty) {
-            targetMembers = body['split_among'] as List;
+            memberIds = body['split_among'] as List;
           } else {
             final ms = await DB.query('SELECT user_id FROM trip_members WHERE trip_id = ?', [tripId]);
-            targetMembers = ms.map((m) => m['user_id']).toList();
+            memberIds = ms.map((m) => m['user_id']).toList();
           }
-          
-          if (targetMembers.isEmpty) throw Exception("No members to split among");
-          
-          double share = amount / targetMembers.length;
-          double roundedShare = double.parse(share.toStringAsFixed(2));
-          double sum = roundedShare * targetMembers.length;
-          double remainder = amount - sum;
 
-          for (int i = 0; i < targetMembers.length; i++) {
-            double s = roundedShare;
-            if (i == 0) s += remainder; // Give remainder to first person
+          if (memberIds.isEmpty) throw Exception("No members to split among");
+
+          final shareRaw = amount / memberIds.length;
+          final share = double.parse(shareRaw.toStringAsFixed(2));
+          final remainder = double.parse((amount - share * memberIds.length).toStringAsFixed(2));
+
+          for (int i = 0; i < memberIds.length; i++) {
+            final memberShare = (i == 0) ? share + remainder : share;
             await DB.execute(
               'INSERT INTO expense_splits (expense_id, user_id, share_amount) VALUES (?, ?, ?)',
-              [newExpenseId, targetMembers[i], s]
+              [newExpenseId, memberIds[i], memberShare]
             );
           }
         } 
         else if (splitType == 'custom') {
-          final splits = body['custom_splits'] as List;
-          double sum = 0;
-          for (final s in splits) {
-            sum += (s['amount'] as num).toDouble();
-          }
-          if ((sum - amount).abs() > 0.05) throw Exception("Custom splits do not add up to total amount");
-          
-          for (final s in splits) {
+          final customSplits = body['custom_splits'] as List;
+          for (final split in customSplits) {
             await DB.execute(
               'INSERT INTO expense_splits (expense_id, user_id, share_amount) VALUES (?, ?, ?)',
-              [newExpenseId, s['user_id'], s['amount']]
+              [newExpenseId, split['user_id'], split['amount']]
             );
           }
         }

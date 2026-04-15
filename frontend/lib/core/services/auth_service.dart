@@ -20,6 +20,7 @@ class AuthService {
         phoneNumber: '+91$phone',
         verificationCompleted: (PhoneAuthCredential credential) {},
         verificationFailed: (FirebaseAuthException e) {
+          print('[AuthService] verificationFailed: ${e.code} — ${e.message}');
           onError(e.message ?? 'Verification failed');
         },
         codeSent: (String verificationId, int? resendToken) {
@@ -46,7 +47,10 @@ class AuthService {
       final userCredential = await _firebaseAuth.signInWithCredential(credential);
       final idToken = await userCredential.user?.getIdToken();
 
-      if (idToken == null) return null;
+      if (idToken == null) {
+        print('[AuthService] Firebase sign-in succeeded but idToken is null');
+        return null;
+      }
 
       // Exchange Firebase Token with backend
       final response = await _apiService.post(ApiConstants.verifyOtp, data: {
@@ -69,8 +73,13 @@ class AuthService {
           'isNew': isNew,
         };
       }
+      print('[AuthService] Backend verify-otp failed: ${response.data}');
+      return null;
+    } on FirebaseAuthException catch (e) {
+      print('[AuthService] FirebaseAuthException: ${e.code} — ${e.message}');
       return null;
     } catch (e) {
+      print('[AuthService] verifyOtp error: $e');
       return null;
     }
   }
