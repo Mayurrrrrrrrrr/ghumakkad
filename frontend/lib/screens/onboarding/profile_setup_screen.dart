@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../core/services/api_service.dart';
+import '../../core/constants/api_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_colors.dart';
@@ -99,8 +103,22 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     }
 
     setState(() => _isLoading = true);
-    // Ideally update profile API call here
-    // For now we just refresh internal state
+    
+    try {
+      final apiService = ref.read(apiServiceProvider);
+      await apiService.put(ApiConstants.updateProfile, data: {'name': name});
+      
+      final prefs = await SharedPreferences.getInstance();
+      final userDataStr = prefs.getString('user_data');
+      if (userDataStr != null) {
+        final userData = json.decode(userDataStr) as Map<String, dynamic>;
+        userData['name'] = name;
+        await prefs.setString('user_data', json.encode(userData));
+      }
+    } catch (e) {
+      // Continue even if update fails
+    }
+    
     await ref.read(authProvider.notifier).checkAuth();
     setState(() => _isLoading = false);
   }

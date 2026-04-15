@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_typography.dart';
-import '../../../models/trip.dart';
-import '../../../models/expense.dart';
-import '../../../providers/hisaab_provider.dart';
-import '../../../providers/expenses_provider.dart';
+import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_typography.dart';
+import '../../models/trip.dart';
+import '../../models/expense.dart';
+import '../../providers/hisaab_provider.dart';
+import '../../providers/expenses_provider.dart';
 import 'add_expense_screen.dart';
 import 'settlement_screen.dart';
 

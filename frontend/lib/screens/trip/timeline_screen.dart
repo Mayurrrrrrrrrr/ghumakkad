@@ -1,12 +1,14 @@
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_typography.dart';
-import '../../../models/trip.dart';
-import '../../../models/memory.dart';
-import '../../../providers/memories_provider.dart';
+import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_typography.dart';
+import '../../models/trip.dart';
+import '../../models/memory.dart';
+import '../../providers/memories_provider.dart';
 
 class TimelineScreen extends ConsumerStatefulWidget {
   final Trip trip;
@@ -19,8 +21,24 @@ class TimelineScreen extends ConsumerStatefulWidget {
 
 class _TimelineScreenState extends ConsumerState<TimelineScreen> {
   String _filter = 'All';
+  int? _currentUserId;
 
   final List<String> _filters = ['All', 'Photos', 'Notes', 'Mine'];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentUser();
+  }
+
+  Future<void> _loadCurrentUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userDataStr = prefs.getString('user_data');
+    if (userDataStr != null) {
+      final userData = json.decode(userDataStr);
+      setState(() => _currentUserId = userData['id']);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +58,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
           Expanded(
             child: memoriesAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, _) => Center(child: Text('Error: \$err')),
+              error: (err, _) => Center(child: Text('Error: $err')),
               data: (memories) {
                 // Apply filters
                 var filtered = memories;
@@ -48,12 +66,8 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
                   filtered = memories.where((m) => m.memoryType == 'photo').toList();
                 } else if (_filter == 'Notes') {
                   filtered = memories.where((m) => m.memoryType == 'note').toList();
-                } else if (_filter == 'Mine') {
-                  // Assuming authProvider gets current user ID, for now dummy logic:
-                  // We'll just filter by addedBy maybe using some state, but we skip true filter logic 
-                  // or assume addedByName == current user name. 
-                  // This is just a UI placeholder.
-                  // filtered = memories.where((m) => m.addedBy == currentUser.id).toList();
+                } else if (_filter == 'Mine' && _currentUserId != null) {
+                  filtered = memories.where((m) => m.addedBy == _currentUserId).toList();
                 }
 
                 if (filtered.isEmpty) {

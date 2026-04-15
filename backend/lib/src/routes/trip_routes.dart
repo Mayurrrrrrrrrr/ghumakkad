@@ -34,7 +34,7 @@ class TripRoutes {
         WHERE tm.user_id = ?
         ORDER BY CASE WHEN t.status = 'active' THEN 1 ELSE 2 END, t.start_date DESC
       ''', [user['id']]);
-      return ApiResponse.ok(trips);
+      return ApiResponse.ok({'trips': trips});
     } on UnauthorizedException {
       return ApiResponse.unauthorized();
     } catch (e) {

@@ -45,10 +45,11 @@ class PinRoutes {
       if (check == null) return ApiResponse.error("Not a member", statusCode: 403);
 
       final res = await DB.execute('''
-        INSERT INTO trip_pins (trip_id, pin_type, title, latitude, longitude, address, pinned_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO trip_pins (trip_id, added_by, pin_type, title, latitude, longitude, address, pinned_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       ''', [
-        tripId, 
+        tripId,
+        user['id'],
         body['pin_type'] ?? 'waypoint',
         body['title'],
         body['latitude'],

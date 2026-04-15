@@ -9,7 +9,8 @@ final tripsProvider = FutureProvider<List<Trip>>((ref) async {
   final response = await apiService.get(ApiConstants.trips);
   
   if (response.data['success'] == true) {
-    final List list = response.data['data']['trips'];
+    final rawData = response.data['data'];
+    final List list = rawData is List ? rawData : (rawData['trips'] ?? []);
     return list.map((e) => Trip.fromJson(e)).toList();
   }
   return [];
