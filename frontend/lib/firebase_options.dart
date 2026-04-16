@@ -48,7 +48,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions web = FirebaseOptions(
     apiKey: 'AIzaSyCGJyjh08v2FkIa_u0US-n0yYT56Ke3lYo',
-    appId: '1:512259810344:web:f38a6a6c0b3c2d1e0f9b8a', // Placeholder ID derived from project number
+    appId: '1:512259810344:web:d8495a91a01f750a14011d', // Real Web App ID provided by user
     messagingSenderId: '512259810344',
     projectId: 'ghumakkad-e2263',
     authDomain: 'ghumakkad-e2263.firebaseapp.com',
