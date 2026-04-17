@@ -23,7 +23,22 @@ class AuthRoutes {
 
   Future<Response> _verifyOtp(Request request) async {
     try {
-      final body = jsonDecode(await request.readAsString()) as Map<String, dynamic>;
+      final rawBody = await request.readAsString();
+      print('[AuthRoutes] Received verify-otp request. Body length: ${rawBody.length}');
+
+      if (rawBody.trim().isEmpty) {
+        print('[AuthRoutes] Error: Request body is empty');
+        return ApiResponse.error('Request body is empty');
+      }
+
+      final Map<String, dynamic> body;
+      try {
+        body = jsonDecode(rawBody) as Map<String, dynamic>;
+      } catch (e) {
+        print('[AuthRoutes] JSON parse error: $e. Raw body: "$rawBody"');
+        return ApiResponse.error('Invalid JSON format');
+      }
+
       final firebaseToken = body['firebase_token'] as String?;
 
       if (firebaseToken == null || firebaseToken.isEmpty) {
