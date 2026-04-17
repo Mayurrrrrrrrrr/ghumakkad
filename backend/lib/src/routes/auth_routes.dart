@@ -23,15 +23,10 @@ class AuthRoutes {
 
   Future<Response> _verifyOtp(Request request) async {
     try {
-      print('[AuthRoutes] --- VERIFY-OTP HEADERS ---');
-      request.headers.forEach((key, value) => print('  $key: $value'));
-
-      final List<int> bytes = await request.read().expand((b) => b).toList();
-      final rawBody = utf8.decode(bytes);
-      print('[AuthRoutes] Received verify-otp body length: ${bytes.length}');
+      final rawBody = await request.readAsString();
 
       if (rawBody.trim().isEmpty) {
-        return ApiResponse.error('Request body is empty (Server log shows 0 bytes)');
+        return ApiResponse.error('Request body is empty (Server received 0 bytes)');
       }
 
       final Map<String, dynamic> body;
