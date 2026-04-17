@@ -4,7 +4,7 @@ class ApiConstants {
   static const String baseUrl = 'https://ghumakkad.yuktaa.com/api/v1';
 
   // Auth
-  static const String sendOtp = '/auth/send-otp';
+  // sendOtp removed — Firebase SDK handles SMS directly, no backend route needed
   static const String verifyOtp = '/auth/verify-otp';
   static const String logout = '/auth/logout';
   static const String updateProfile = '/auth/update-profile';
