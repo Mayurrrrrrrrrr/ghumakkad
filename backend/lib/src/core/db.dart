@@ -45,8 +45,8 @@ class DB {
     String newSql = sql;
     Map<String, dynamic> mappedParams = {};
     for (int i = 0; i < params.length; i++) {
-       newSql = newSql.replaceFirst('?', ':p\$i');
-       mappedParams['p\$i'] = params[i];
+       newSql = newSql.replaceFirst('?', ':p$i');
+       mappedParams['p$i'] = params[i];
     }
     return (sql: newSql, params: mappedParams);
   }

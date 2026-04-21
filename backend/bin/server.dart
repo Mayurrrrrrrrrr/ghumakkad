@@ -20,18 +20,21 @@ void main() async {
 
   final router = Router();
 
-  // Mount all route groups
-  router.mount('/api/v1/auth/',     AuthRoutes().router);
-  router.mount('/api/v1/trips/',    TripRoutes().router);
-  router.mount('/api/v1/pins/',     PinRoutes().router);
-  router.mount('/api/v1/memories/', MemoryRoutes().router);
-  router.mount('/api/v1/members/',  MemberRoutes().router);
-  router.mount('/api/v1/tickets/',  TicketRoutes().router);
-  router.mount('/api/v1/hotels/',   HotelRoutes().router);
-  router.mount('/api/v1/expenses/', ExpenseRoutes().router);
-  router.mount('/api/v1/hisaab/',   HisaabRoutes().router);
-  router.mount('/api/v1/route/',    RouteRoutes().router);
-  router.mount('/api/v1/upload/',   UploadRoutes().router);
+  // Health check endpoint
+  router.get('/health', (Request request) => Response.ok('OK'));
+
+  // Mount all route groups (no trailing slash — shelf_router adds it)
+  router.mount('/api/v1/auth',     AuthRoutes().router);
+  router.mount('/api/v1/trips',    TripRoutes().router);
+  router.mount('/api/v1/pins',     PinRoutes().router);
+  router.mount('/api/v1/memories', MemoryRoutes().router);
+  router.mount('/api/v1/members',  MemberRoutes().router);
+  router.mount('/api/v1/tickets',  TicketRoutes().router);
+  router.mount('/api/v1/hotels',   HotelRoutes().router);
+  router.mount('/api/v1/expenses', ExpenseRoutes().router);
+  router.mount('/api/v1/hisaab',   HisaabRoutes().router);
+  router.mount('/api/v1/route',    RouteRoutes().router);
+  router.mount('/api/v1/upload',   UploadRoutes().router);
 
   final handler = Pipeline()
       .addMiddleware(_corsMiddleware())
